@@ -15,13 +15,19 @@ func Setup(r *gin.Engine) {
 		sellers.POST("/signup", handlers.SellerSignup)
 		sellers.POST("/login", handlers.SellerLogin)
 		sellers.GET("/verify-email", handlers.VerifyEmail)
-
 	}
 
 	// Protected routes — JWT required
 	auth := api.Group("/")
 	auth.Use(middleware.AuthMiddleware())
 	{
+		// Seller
 		auth.GET("/sellers/me", handlers.GetSellerProfile)
+
+		// Store
+		auth.POST("/stores", handlers.CreateStore)
+		auth.GET("/stores", handlers.GetMyStores)
+		auth.GET("/stores/:id", handlers.GetStore)
+		auth.DELETE("/stores/:id", handlers.DeleteStore)
 	}
 }

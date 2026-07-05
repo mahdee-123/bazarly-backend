@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/mahdee-123/bazarly-backend/config"
 	"github.com/mahdee-123/bazarly-backend/db"
@@ -18,6 +19,15 @@ func main() {
 
 	// Gin router
 	r := gin.Default()
+
+
+		// CORS setup
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3000"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		AllowCredentials: true,
+	}))
 
 	// Routes setup
 	routes.Setup(r)
