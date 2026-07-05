@@ -57,3 +57,20 @@ func GetSellerProfile(c *gin.Context) {
 
 	utils.Success(c, http.StatusOK, "Profile fetched", seller)
 }
+
+
+func VerifyEmail(c *gin.Context) {
+	token := c.Query("token")
+	if token == "" {
+		utils.Error(c, http.StatusBadRequest, "Token is required")
+		return
+	}
+
+	err := services.VerifySellerEmail(token)
+	if err != nil {
+		utils.Error(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	utils.Success(c, http.StatusOK, "Email verified successfully", nil)
+}

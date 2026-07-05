@@ -3,6 +3,7 @@ package repository
 import (
 	"database/sql"
 	"errors"
+	"time"
 
 	"github.com/mahdee-123/bazarly-backend/db"
 	"github.com/mahdee-123/bazarly-backend/models"
@@ -104,4 +105,42 @@ func UpdateLastLogin(id string) error {
 		WHERE id = $1
 	`, id)
 	return err
+}
+
+
+
+
+func SaveVerificationToken(sellerID, token string, expiresAt time.Time) error {
+	_, err := db.DB.Exec(`
+		UPDATE sellers
+		SET verification_token = $1,
+		    token_expires_at = $2,
+		    updated_at = now()
+		WHERE id = $3
+	`, token, expiresAt, sellerID)
+	return err
+}
+
+func VerifyEmail(token string) error {
+	result, err := db.DB.Exec(`
+		UPDATE sellers
+		SET email_verified = true,
+		    verification_token = NULL,
+		    token_expires_at = NULL,
+		    updated_at = now()
+		WHERE verification_token = $1
+		AND token_expires_at > now()
+		AND deleted_at IS NULL
+	`, token)
+
+	if err != nil {
+		return err
+	}
+
+	rows, _ := result.RowsAffected()
+	if rows == 0 {
+		return errors.New("invalid or expired token")
+	}
+
+	return nil
 }

@@ -6,7 +6,6 @@ import (
 
 	"github.com/joho/godotenv"
 )
-
 type Config struct {
 	DBHost     string
 	DBPort     string
@@ -15,6 +14,11 @@ type Config struct {
 	DBName     string
 	JWTSecret  string
 	AppPort    string
+	SMTPHost   string
+	SMTPPort   string
+	SMTPEmail  string
+	SMTPPass   string
+	AppURL     string
 }
 
 var App Config
@@ -33,5 +37,10 @@ func Load() {
 		DBName:     os.Getenv("DB_NAME"),
 		JWTSecret:  os.Getenv("JWT_SECRET"),
 		AppPort:    os.Getenv("APP_PORT"),
+		SMTPHost:   os.Getenv("SMTP_HOST"),
+		SMTPPort:   os.Getenv("SMTP_PORT"),
+		SMTPEmail:  os.Getenv("SMTP_EMAIL"),
+		SMTPPass:   os.Getenv("SMTP_PASSWORD"),
+		AppURL:     os.Getenv("APP_URL"),
 	}
 }

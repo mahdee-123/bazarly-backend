@@ -14,6 +14,8 @@ func Setup(r *gin.Engine) {
 	{
 		sellers.POST("/signup", handlers.SellerSignup)
 		sellers.POST("/login", handlers.SellerLogin)
+		sellers.GET("/verify-email", handlers.VerifyEmail)
+
 	}
 
 	// Protected routes — JWT required
