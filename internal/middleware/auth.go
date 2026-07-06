@@ -3,9 +3,8 @@ package middleware
 import (
 	"net/http"
 	"strings"
-
 	"github.com/gin-gonic/gin"
-	"github.com/mahdee-123/bazarly-backend/utils"
+	"github.com/mahdee-123/bazarly-backend/internal/utils"
 )
 
 func AuthMiddleware() gin.HandlerFunc {

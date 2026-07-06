@@ -5,9 +5,9 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/mahdee-123/bazarly-backend/config"
-	"github.com/mahdee-123/bazarly-backend/db"
-	"github.com/mahdee-123/bazarly-backend/routes"
+	"github.com/mahdee-123/bazarly-backend/internal/config"
+	"github.com/mahdee-123/bazarly-backend/internal/db"
+	"github.com/mahdee-123/bazarly-backend/internal/routes"
 )
 
 func main() {

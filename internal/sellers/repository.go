@@ -1,74 +1,57 @@
-package repository
+package sellers
 
 import (
 	"database/sql"
 	"errors"
 	"time"
 
-	"github.com/mahdee-123/bazarly-backend/db"
-	"github.com/mahdee-123/bazarly-backend/models"
+	"github.com/mahdee-123/bazarly-backend/internal/db"
 )
 
-func CreateSeller(req models.SellerSignupRequest, passwordHash string) (*models.SellerResponse, error) {
-	var seller models.SellerResponse
+func CreateSellerRepo(req SellerSignupRequest, passwordHash string) (*SellerResponse, error) {
+	var s SellerResponse
 
 	err := db.DB.QueryRow(`
 		INSERT INTO sellers (name, email, phone, password_hash)
 		VALUES ($1, $2, $3, $4)
 		RETURNING id, name, email, phone, email_verified, subscription_tier, created_at
 	`, req.Name, req.Email, req.Phone, passwordHash).Scan(
-		&seller.ID,
-		&seller.Name,
-		&seller.Email,
-		&seller.Phone,
-		&seller.EmailVerified,
-		&seller.SubscriptionTier,
-		&seller.CreatedAt,
+		&s.ID, &s.Name, &s.Email, &s.Phone, &s.EmailVerified, &s.SubscriptionTier, &s.CreatedAt,
 	)
-
 	if err != nil {
 		return nil, err
 	}
 
-	return &seller, nil
+	return &s, nil
 }
 
-func GetSellerByEmail(email string) (*models.Seller, error) {
-	var seller models.Seller
+func GetSellerByEmailRepo(email string) (*Seller, error) {
+	var s Seller
 
 	err := db.DB.QueryRow(`
-		SELECT id, name, email, phone, password_hash, 
-		       email_verified, subscription_tier, 
+		SELECT id, name, email, phone, password_hash,
+		       email_verified, subscription_tier,
 		       is_active, created_at, updated_at
 		FROM sellers
 		WHERE email = $1
 		AND deleted_at IS NULL
 	`, email).Scan(
-		&seller.ID,
-		&seller.Name,
-		&seller.Email,
-		&seller.Phone,
-		&seller.PasswordHash,
-		&seller.EmailVerified,
-		&seller.SubscriptionTier,
-		&seller.IsActive,
-		&seller.CreatedAt,
-		&seller.UpdatedAt,
+		&s.ID, &s.Name, &s.Email, &s.Phone, &s.PasswordHash,
+		&s.EmailVerified, &s.SubscriptionTier, &s.IsActive, &s.CreatedAt, &s.UpdatedAt,
 	)
 
 	if err == sql.ErrNoRows {
 		return nil, errors.New("seller not found")
 	}
-
 	if err != nil {
 		return nil, err
 	}
 
-	return &seller, nil
+	return &s, nil
 }
 
-func GetSellerByID(id string) (*models.SellerResponse, error) {
-	var seller models.SellerResponse
+func GetSellerByIDRepo(id string) (*SellerResponse, error) {
+	var s SellerResponse
 
 	err := db.DB.QueryRow(`
 		SELECT id, name, email, phone, avatar_url,
@@ -77,40 +60,30 @@ func GetSellerByID(id string) (*models.SellerResponse, error) {
 		WHERE id = $1
 		AND deleted_at IS NULL
 	`, id).Scan(
-		&seller.ID,
-		&seller.Name,
-		&seller.Email,
-		&seller.Phone,
-		&seller.AvatarURL,
-		&seller.EmailVerified,
-		&seller.SubscriptionTier,
-		&seller.CreatedAt,
+		&s.ID, &s.Name, &s.Email, &s.Phone, &s.AvatarURL,
+		&s.EmailVerified, &s.SubscriptionTier, &s.CreatedAt,
 	)
 
 	if err == sql.ErrNoRows {
 		return nil, errors.New("seller not found")
 	}
-
 	if err != nil {
 		return nil, err
 	}
 
-	return &seller, nil
+	return &s, nil
 }
 
-func UpdateLastLogin(id string) error {
+func UpdateLastLoginRepo(id string) error {
 	_, err := db.DB.Exec(`
-		UPDATE sellers 
+		UPDATE sellers
 		SET last_login_at = now(), updated_at = now()
 		WHERE id = $1
 	`, id)
 	return err
 }
 
-
-
-
-func SaveVerificationToken(sellerID, token string, expiresAt time.Time) error {
+func SaveVerificationTokenRepo(sellerID, token string, expiresAt time.Time) error {
 	_, err := db.DB.Exec(`
 		UPDATE sellers
 		SET verification_token = $1,
@@ -121,7 +94,7 @@ func SaveVerificationToken(sellerID, token string, expiresAt time.Time) error {
 	return err
 }
 
-func VerifyEmail(token string) error {
+func VerifyEmailRepo(token string) error {
 	result, err := db.DB.Exec(`
 		UPDATE sellers
 		SET email_verified = true,

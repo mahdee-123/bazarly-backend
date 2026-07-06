@@ -5,12 +5,11 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/mahdee-123/bazarly-backend/config"
 	_ "github.com/lib/pq"
+	"github.com/mahdee-123/bazarly-backend/internal/config"
 )
 
 var DB *sql.DB
-
 
 func Connect() {
 	dsn := fmt.Sprintf(
@@ -29,6 +28,7 @@ func Connect() {
 	}
 
 	err = DB.Ping()
+	
 	if err != nil {
 		log.Fatal("DB ping failed:", err)
 	}

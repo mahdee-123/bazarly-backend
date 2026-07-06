@@ -3,15 +3,15 @@ package services
 import (
 	"fmt"
 	"net/smtp"
-
-	"github.com/mahdee-123/bazarly-backend/config"
+	"github.com/mahdee-123/bazarly-backend/internal/config"
 )
 
 func SendVerificationEmail(toEmail, name, token string) error {
-	from := config.App.SMTPEmail
-	password := config.App.SMTPPass
-	host := config.App.SMTPHost
-	port := config.App.SMTPPort
+
+	from 		 := config.App.SMTPEmail
+	password  := config.App.SMTPPass
+	host 		 := config.App.SMTPHost
+	port 		 := config.App.SMTPPort
 
 	verifyURL := fmt.Sprintf(
 		"%s/api/sellers/verify-email?token=%s",
@@ -20,7 +20,7 @@ func SendVerificationEmail(toEmail, name, token string) error {
 	)
 
 	subject := "Subject: Bazarly — Email Verification\n"
-	mime := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
+	mime    := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
 
 	body := fmt.Sprintf(`
 		<h2>Welcome to Bazarly, %s!</h2>

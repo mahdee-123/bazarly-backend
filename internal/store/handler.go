@@ -1,36 +1,34 @@
-package handlers
+package store
 
 import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/mahdee-123/bazarly-backend/models"
-	"github.com/mahdee-123/bazarly-backend/services"
-	"github.com/mahdee-123/bazarly-backend/utils"
+	"github.com/mahdee-123/bazarly-backend/internal/utils"
 )
 
-func CreateStore(c *gin.Context) {
+func CreateStoreHandler(c *gin.Context) {
 	sellerID := c.GetString("seller_id")
 
-	var req models.CreateStoreRequest
+	var req CreateStoreRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.Error(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	store, err := services.CreateStore(sellerID, req)
+	newStore, err := CreateStore(sellerID, req)
 	if err != nil {
 		utils.Error(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	utils.Success(c, http.StatusCreated, "Store created successfully", store)
+	utils.Success(c, http.StatusCreated, "Store created successfully", newStore)
 }
 
-func GetMyStores(c *gin.Context) {
+func GetMyStoresHandler(c *gin.Context) {
 	sellerID := c.GetString("seller_id")
 
-	stores, err := services.GetMyStores(sellerID)
+	stores, err := GetMyStores(sellerID)
 	if err != nil {
 		utils.Error(c, http.StatusInternalServerError, err.Error())
 		return
@@ -39,25 +37,24 @@ func GetMyStores(c *gin.Context) {
 	utils.Success(c, http.StatusOK, "Stores fetched", stores)
 }
 
-func GetStore(c *gin.Context) {
+func GetStoreHandler(c *gin.Context) {
 	sellerID := c.GetString("seller_id")
-	storeID := c.Param("id")
+	storeID := c.Param("storeId") // "id" → "storeId"
 
-	store, err := services.GetStore(storeID, sellerID)
+	foundStore, err := GetStore(storeID, sellerID)
 	if err != nil {
 		utils.Error(c, http.StatusNotFound, err.Error())
 		return
 	}
 
-	utils.Success(c, http.StatusOK, "Store fetched", store)
+	utils.Success(c, http.StatusOK, "Store fetched", foundStore)
 }
 
-func DeleteStore(c *gin.Context) {
+func DeleteStoreHandler(c *gin.Context) {
 	sellerID := c.GetString("seller_id")
-	storeID := c.Param("id")
+	storeID := c.Param("storeId") // "id" → "storeId"
 
-	err := services.DeleteStore(storeID, sellerID)
-	if err != nil {
+	if err := DeleteStore(storeID, sellerID); err != nil {
 		utils.Error(c, http.StatusNotFound, err.Error())
 		return
 	}

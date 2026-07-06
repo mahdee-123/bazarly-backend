@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/mahdee-123/bazarly-backend/config"
+	"github.com/mahdee-123/bazarly-backend/internal/config"
 )
 
 type Claims struct {

@@ -1,76 +1,73 @@
-package handlers
+package sellers
 
 import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/mahdee-123/bazarly-backend/models"
-	"github.com/mahdee-123/bazarly-backend/services"
-	"github.com/mahdee-123/bazarly-backend/utils"
+	"github.com/mahdee-123/bazarly-backend/internal/utils"
 )
 
-func SellerSignup(c *gin.Context) {
-	var req models.SellerSignupRequest
+func SellerSignupHandler(c *gin.Context) {
+	var req SellerSignupRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.Error(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	seller, err := services.SignupSeller(req)
+	newSeller, err := SignupSeller(req)
 	if err != nil {
 		utils.Error(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	utils.Success(c, http.StatusCreated, "Signup successful", seller)
+	utils.Success(c, http.StatusCreated, "Signup successful", newSeller)
 }
 
-func SellerLogin(c *gin.Context) {
-	var req models.SellerLoginRequest
+func SellerLoginHandler(c *gin.Context) {
+	var req SellerLoginRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.Error(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	seller, token, err := services.LoginSeller(req)
+	loggedInSeller, token, err := LoginSeller(req)
 	if err != nil {
 		utils.Error(c, http.StatusUnauthorized, err.Error())
 		return
 	}
 
 	utils.Success(c, http.StatusOK, "Login successful", gin.H{
-		"seller": seller,
+		"seller": loggedInSeller,
 		"token":  token,
 	})
 }
 
-func GetSellerProfile(c *gin.Context) {
+func GetSellerProfileHandler(c *gin.Context) {
 	sellerID := c.GetString("seller_id")
 
-	seller, err := services.GetSellerProfile(sellerID)
+	profile, err := GetSellerProfile(sellerID)
 	if err != nil {
 		utils.Error(c, http.StatusNotFound, err.Error())
 		return
 	}
 
-	utils.Success(c, http.StatusOK, "Profile fetched", seller)
+	utils.Success(c, http.StatusOK, "Profile fetched", profile)
 }
 
-
-func VerifyEmail(c *gin.Context) {
+func VerifyEmailHandler(c *gin.Context) {
 	token := c.Query("token")
 	if token == "" {
 		utils.Error(c, http.StatusBadRequest, "Token is required")
 		return
 	}
 
-	err := services.VerifySellerEmail(token)
-	if err != nil {
+	if err := VerifySellerEmail(token); err != nil {
 		utils.Error(c, http.StatusBadRequest, err.Error())
 		return
 	}
+	
 
 	utils.Success(c, http.StatusOK, "Email verified successfully", nil)
 }
