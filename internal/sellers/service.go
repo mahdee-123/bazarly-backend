@@ -2,6 +2,7 @@ package sellers
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/mahdee-123/bazarly-backend/internal/services"
@@ -29,7 +30,14 @@ func SignupSeller(req SellerSignupRequest) (*SellerResponse, error) {
 		return nil, errors.New("failed to save verification token")
 	}
 
-	go services.SendVerificationEmail(newSeller.Email, newSeller.Name, token)
+	go func() {
+    err := services.SendVerificationEmail(newSeller.Email, newSeller.Name, token)
+    if err != nil {
+        fmt.Println("❌ Email send failed:", err)
+    } else {
+        fmt.Println("✅ Email sent to:", newSeller.Email)
+    }
+}()
 
 	return newSeller, nil
 }
@@ -88,4 +96,57 @@ func GetSellerProfile(sellerID string) (*SellerResponse, error) {
 
 func VerifySellerEmail(token string) error {
 	return VerifyEmailRepo(token)
+}
+
+
+
+
+func ForgotPassword(email string) error {
+	// Email diye seller khojo
+	s, err := GetSellerByEmailRepo(email)
+	if err != nil {
+		// Security: email না থাকলেও same response দাও
+		return nil
+	}
+
+	// Reset token generate
+	token, err := utils.GenerateRandomToken()
+	if err != nil {
+		return errors.New("token generation failed")
+	}
+
+	// Token save (1 ghonta valid)
+	expiresAt := time.Now().Add(1 * time.Hour)
+	err = SaveResetTokenRepo(s.ID, token, expiresAt)
+	if err != nil {
+		return errors.New("failed to save reset token")
+	}
+
+	// Email pathao
+	go func() {
+		err := services.SendPasswordResetEmail(s.Email, s.Name, token)
+		if err != nil {
+			fmt.Println("❌ Reset email failed:", err)
+		} else {
+			fmt.Println("✅ Reset email sent to:", s.Email)
+		}
+	}()
+
+	return nil
+}
+
+func ResetPassword(token, newPassword string) error {
+	// Password hash
+	hash, err := utils.HashPassword(newPassword)
+	if err != nil {
+		return errors.New("password hashing failed")
+	}
+
+	// Reset
+	err = ResetPasswordRepo(token, hash)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

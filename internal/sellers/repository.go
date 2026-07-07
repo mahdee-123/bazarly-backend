@@ -117,3 +117,68 @@ func VerifyEmailRepo(token string) error {
 
 	return nil
 }
+
+
+
+func SaveResetTokenRepo(sellerID, token string, expiresAt time.Time) error {
+	_, err := db.DB.Exec(`
+		UPDATE sellers
+		SET reset_token = $1,
+		    reset_token_expires = $2,
+		    updated_at = now()
+		WHERE id = $3
+	`, token, expiresAt, sellerID)
+	return err
+}
+
+func GetSellerByResetToken(token string) (*Seller, error) {
+	var s Seller
+
+	err := db.DB.QueryRow(`
+		SELECT id, name, email, phone, password_hash,
+		       email_verified, subscription_tier,
+		       is_active, created_at, updated_at
+		FROM sellers
+		WHERE reset_token = $1
+		AND reset_token_expires > now()
+		AND deleted_at IS NULL
+	`, token).Scan(
+		&s.ID, &s.Name, &s.Email, &s.Phone,
+		&s.PasswordHash, &s.EmailVerified,
+		&s.SubscriptionTier, &s.IsActive,
+		&s.CreatedAt, &s.UpdatedAt,
+	)
+
+	if err == sql.ErrNoRows {
+		return nil, errors.New("invalid or expired token")
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return &s, nil
+}
+
+func ResetPasswordRepo(token, newHash string) error {
+	result, err := db.DB.Exec(`
+		UPDATE sellers
+		SET password_hash = $1,
+		    reset_token = NULL,
+		    reset_token_expires = NULL,
+		    updated_at = now()
+		WHERE reset_token = $2
+		AND reset_token_expires > now()
+		AND deleted_at IS NULL
+	`, newHash, token)
+
+	if err != nil {
+		return err
+	}
+
+	rows, _ := result.RowsAffected()
+	if rows == 0 {
+		return errors.New("invalid or expired token")
+	}
+
+	return nil
+}

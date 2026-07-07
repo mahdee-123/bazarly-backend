@@ -71,3 +71,40 @@ func VerifyEmailHandler(c *gin.Context) {
 
 	utils.Success(c, http.StatusOK, "Email verified successfully", nil)
 }
+
+
+func ForgotPasswordHandler(c *gin.Context) {
+	var req struct {
+		Email string `json:"email" binding:"required,email"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.Error(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	// Error না দেখিয়ে always success — security best practice
+	ForgotPassword(req.Email)
+
+	utils.Success(c, http.StatusOK, "If this email exists, a reset link has been sent", nil)
+}
+
+func ResetPasswordHandler(c *gin.Context) {
+	var req struct {
+		Token       string `json:"token" binding:"required"`
+		NewPassword string `json:"new_password" binding:"required,min=6"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.Error(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	err := ResetPassword(req.Token, req.NewPassword)
+	if err != nil {
+		utils.Error(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	utils.Success(c, http.StatusOK, "Password reset successfully", nil)
+}
